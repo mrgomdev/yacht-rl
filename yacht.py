@@ -1,12 +1,15 @@
 import abc
 import random
-from typing import Collection, ClassVar, List
+from typing import ClassVar, Tuple, Protocol
+
 
 DICE_NUMBERS = tuple(range(1, 7))
+Combination = Tuple[int, ...]
 COMBINATION_LENGTH = 5
 
-def rand_combination(k: int = COMBINATION_LENGTH) -> List[int]:
-    return list(random.choices(DICE_NUMBERS, k=k))
+
+def rand_combination(k: int = COMBINATION_LENGTH) -> Combination:
+    return tuple(random.choices(DICE_NUMBERS, k=k))
 
 
 if __name__ == '__main__':
@@ -14,19 +17,19 @@ if __name__ == '__main__':
     assert all(each in DICE_NUMBERS for each in rand_combination())
 
 
-class Category:
+class Category(Protocol):
     @classmethod
     @abc.abstractmethod
-    def match(cls, combination: Collection[int]) -> bool:
+    def match(cls, combination: Combination) -> bool:
         return False
 
     @classmethod
     @abc.abstractmethod
-    def _measure(cls, combination: Collection[int]) -> int:
+    def _measure(cls, combination: Combination) -> int:
         raise NotImplementedError('Implement .measure()')
 
     @classmethod
-    def measure(cls, combination: Collection[int]) -> int:
+    def measure(cls, combination: Combination) -> int:
         if not cls.match(combination):
             return 0
         return cls._measure(combination)
@@ -36,11 +39,11 @@ class MatchSpecific(Category):
     specific: ClassVar[int] = 0
 
     @classmethod
-    def match(cls, combination: Collection[int]) -> bool:
+    def match(cls, combination: Combination) -> bool:
         return True
 
     @classmethod
-    def _measure(cls, combination: Collection[int]) -> int:
+    def _measure(cls, combination: Combination) -> int:
         return sum(each for each in combination if each == cls.specific)
 
 
