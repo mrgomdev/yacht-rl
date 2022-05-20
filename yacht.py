@@ -52,6 +52,22 @@ class Twos(MatchSpecific):
     specific: ClassVar[int] = 2
 
 
+class Threes(MatchSpecific):
+    specific: ClassVar[int] = 3
+
+
+class Fours(MatchSpecific):
+    specific: ClassVar[int] = 4
+
+
+class Fives(MatchSpecific):
+    specific: ClassVar[int] = 5
+
+
+class Sixs(MatchSpecific):
+    specific: ClassVar[int] = 6
+
+
 if __name__ == '__main__':
     my_combination = (1, 2, 3, 4, 5)
     assert 1 == Ones.measure(my_combination)
