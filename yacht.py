@@ -1,4 +1,5 @@
 import abc
+import dataclasses
 import random
 from typing import ClassVar, Tuple, Protocol
 
@@ -83,6 +84,28 @@ if __name__ == '__main__':
     my_combination = rand_combination()
     assert sum(filter(lambda x: x == 1, my_combination)) == Ones.measure(my_combination)
     assert sum(filter(lambda x: x == 2, my_combination)) == Twos.measure(my_combination)
+
+
+@dataclasses.dataclass(frozen=True)
+class ScoreBoardRow:
+    combination: Combination
+    category: Category
+
+    @property
+    def score(self):
+        return self.category.measure(combination=self.combination)
+
+
+if __name__ == '__main__':
+    my_combination = (1, 1, 2, 5, 5)
+    my_row = ScoreBoardRow(combination=my_combination, category=Ones)
+    assert 2 == my_row.score
+
+    my_row = ScoreBoardRow(combination=my_combination, category=Twos)
+    assert 2 == my_row.score
+
+    my_row = ScoreBoardRow(combination=my_combination, category=Threes)
+    assert 0 == my_row.score
 
 
 class ScoreBoard:
