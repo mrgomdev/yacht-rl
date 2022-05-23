@@ -1,8 +1,7 @@
 import abc
 import dataclasses
 import random
-from typing import ClassVar, Tuple, Protocol
-
+from typing import Sequence, ClassVar, Tuple, Protocol, Dict, runtime_checkable, Optional
 
 DICE_NUMBERS = tuple(range(1, 7))
 Combination = Tuple[int, ...]
@@ -114,7 +113,59 @@ if __name__ == '__main__':
 
 
 class ScoreBoard:
-    pass
+    categories: ClassVar[Sequence[Category]] = Ones, Twos, Threes, Fours, Fives, Sixs
+
+    def __init__(self):
+        self.rows: Dict[Category, ScoreBoardRow] = dict()
+
+    def add(self, combination: Combination, category: Category):
+        if category in self.rows:
+            raise ValueError(f"Category {category} already in self.rows.")
+        self.rows[category] = ScoreBoardRow(combination=combination, category=category)
+
+    @property
+    def score(self):
+        total_score = 0
+        for row_category, row in self.rows.items():
+            total_score += row.score
+        return total_score
+
+    @staticmethod
+    def _summary_row(category: Category, row: Optional[ScoreBoardRow]) -> str:
+        prefix = f"{category.__name__}: "
+        if row is not None:
+            if category != row.category:
+                raise ValueError(f'self.rows category is not matching. {category} vs {row.category}')
+            return prefix + f"{row.score} ({', '.join(map(str, sorted(row.combination)))})"
+        else:
+            return prefix
+
+    @property
+    def summary(self) -> str:
+        summaries = [self._summary_row(category=category, row=self.rows.get(category)) for category in self.categories]
+        return "\n".join(summaries)
+
+
+if __name__ == '__main__':
+    board = ScoreBoard()
+    my_combination = (1, 1, 3, 5, 4)
+    board.add(combination=my_combination, category=Ones)
+    try:
+        board.add(combination=(5, 5, 5, 5, 5), category=Ones)
+    except ValueError as e:
+        print(f'Caught ValueError: {e}')
+    board.add(combination=(4, 4, 4, 4, 4), category=Fours)
+    print(board.summary)
+
+    board = ScoreBoard()
+    board.add(combination=(1, 4, 1, 2, 1), category=Twos)
+    board.add(combination=(1, 4, 1, 2, 1), category=Ones)
+    try:
+        board.add(combination=(1, 4, 1, 2, 5), category=Twos)
+    except ValueError as e:
+        print(f'Caught ValueError: {e}')
+    board.add(combination=(5, 5, 5, 5, 5), category=Fours)
+    print(board.summary)
 
 
 class Game:
