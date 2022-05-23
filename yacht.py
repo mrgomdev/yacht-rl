@@ -130,6 +130,70 @@ if __name__ == '__main__':
     assert 7 == FullHouse.measure(combination=(1, 1, 1, 2, 2))
 
 
+class ContainsTemplate(Category, Protocol):
+    @classmethod
+    @abc.abstractmethod
+    def templates(cls) -> Tuple[Tuple[int, ...], ...]:
+        return tuple()
+
+    @classmethod
+    def match(cls, combination: Combination) -> bool:
+        for template in cls.templates():
+            if all(combination.count(each) >= template.count(each) for each in set(template)):
+                return True
+        return False
+
+
+if __name__ == '__main__':
+    class MyTemplate(ContainsTemplate):
+        @classmethod
+        def _measure(cls, combination: Combination) -> int:
+            return 42
+
+        @classmethod
+        def templates(cls) -> Tuple[Tuple[int, ...], ...]:
+            return (1, 3, 1), (3, 2, 1)
+
+
+    assert 42 == MyTemplate.measure((1, 2, 3))
+    assert 0 == MyTemplate.measure((1, 1))
+    assert 0 == MyTemplate.measure((1, 3))
+    assert 42 == MyTemplate.measure((3, 1, 1))
+
+
+class Straight(ContainsTemplate, Protocol):
+    STRAIGHT_LENGTH = int(1e+10)
+
+    @classmethod
+    def templates(cls) -> Tuple[Tuple[int, ...], ...]:
+        return tuple(tuple(range(start, start + cls.STRAIGHT_LENGTH)) for start in range(min(DICE_NUMBERS), max(DICE_NUMBERS) - cls.STRAIGHT_LENGTH + 2))
+
+
+class SmallStraight(Straight):
+    STRAIGHT_LENGTH = 4
+
+    @classmethod
+    def _measure(cls, combination: Combination) -> int:
+        return 15
+
+
+class LargeStraight(Straight):
+    STRAIGHT_LENGTH = 5
+
+    @classmethod
+    def _measure(cls, combination: Combination) -> int:
+        return 30
+
+
+if __name__ == '__main__':
+    assert 0 == SmallStraight.measure((1, 2, 2, 2, 2))
+    assert 0 == SmallStraight.measure((1, 2, 3, 2, 2))
+    assert 15 == SmallStraight.measure((1, 2, 3, 4, 2))
+    assert 0 == SmallStraight.measure((2, 2, 2, 2, 2))
+    assert 0 == SmallStraight.measure((2, 2, 3, 4, 2))
+    assert 15 == SmallStraight.measure((2, 2, 3, 4, 5))
+
+
 @dataclasses.dataclass(frozen=True)
 class ScoreBoardRow:
     combination: Combination
