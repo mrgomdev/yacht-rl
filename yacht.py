@@ -18,6 +18,7 @@ if __name__ == '__main__':
     assert all(each in DICE_NUMBERS for each in rand_combination())
 
 
+@runtime_checkable
 class Category(Protocol):
     @classmethod
     @abc.abstractmethod
@@ -90,10 +91,14 @@ if __name__ == '__main__':
 class ScoreBoardRow:
     combination: Combination
     category: Category
+    score: int = dataclasses.field(init=False)
 
-    @property
-    def score(self):
-        return self.category.measure(combination=self.combination)
+    def __post_init__(self):
+        if not isinstance(self.combination, tuple) or not all(isinstance(each, int) for each in self.combination):
+            raise TypeError(f'self.combination should be Combination type. Got {type(self.combination)}')
+        if not isinstance(self.category, Category):
+            raise TypeError(f'self.category should be Category. Got {type(self.category)}')
+        object.__setattr__(self, 'score', self.category.measure(combination=self.combination))
 
 
 if __name__ == '__main__':
