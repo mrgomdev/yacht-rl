@@ -86,6 +86,50 @@ if __name__ == '__main__':
     assert sum(filter(lambda x: x == 2, my_combination)) == Twos.measure(my_combination)
 
 
+class SumAll(Category):
+    @classmethod
+    def _measure(cls, combination: Combination) -> int:
+        return sum(combination)
+
+
+class Choice(SumAll):
+    @classmethod
+    def match(cls, combination: Combination) -> bool:
+        return True
+
+
+class FourOfAKind(SumAll):
+    NUM_DUPLICATES = 4
+
+    @classmethod
+    def match(cls, combination: Combination) -> bool:
+        uniques = set(int(each) for each in combination)
+        return any(combination.count(each) >= cls.NUM_DUPLICATES for each in uniques)
+
+
+class FullHouse(SumAll):
+    @classmethod
+    def match(cls, combination: Combination) -> bool:
+        if len(combination) != 5:
+            raise ValueError(f'{cls.__name__} needs the combination exactly 5-length. Got {len(combination)}')
+        uniques = set(int(each) for each in combination)
+        return len(uniques) == 2 and set(combination.count(each) for each in uniques) == {2, 3}
+
+
+if __name__ == '__main__':
+    assert 15 == Choice.measure(combination=(1, 2, 3, 4, 5))
+
+    assert 0 == FourOfAKind.measure(combination=(1, 1, 1, 2, 2))
+    assert 6 == FourOfAKind.measure(combination=(1, 1, 1, 1, 2))
+
+    try:
+        assert 3 == FullHouse.measure(combination=(1, 1, 1))
+    except ValueError as e:
+        print(f"Caught ValueError: {e}")
+    assert 0 == FullHouse.measure(combination=(1, 1, 1, 1, 1))
+    assert 7 == FullHouse.measure(combination=(1, 1, 1, 2, 2))
+
+
 @dataclasses.dataclass(frozen=True)
 class ScoreBoardRow:
     combination: Combination
