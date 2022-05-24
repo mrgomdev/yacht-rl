@@ -194,6 +194,28 @@ if __name__ == '__main__':
     assert 15 == SmallStraight.measure((2, 2, 3, 4, 5))
 
 
+class Yacht(Category):
+    @classmethod
+    def match(cls, combination: Combination) -> bool:
+        return 1 == len(set(int(each) for each in combination))
+
+    @classmethod
+    def _measure(cls, combination: Combination) -> int:
+        return 50
+
+
+if __name__ == '__main__':
+    assert 0 == Yacht.measure((3, 3, 3, 3, 2))
+    assert 50 == Yacht.measure((3, 3, 3, 3, 3))
+    for _i in range(int(1e+10)):
+        my_combination = rand_combination()
+        if Yacht.measure(my_combination) == 50:
+            print(f"Yacht! out of {_i} times. {my_combination}")
+            break
+        else:
+            assert len(set(my_combination)) >= 2
+
+
 @dataclasses.dataclass(frozen=True)
 class ScoreBoardRow:
     combination: Combination
