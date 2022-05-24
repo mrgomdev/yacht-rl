@@ -1,7 +1,7 @@
 import abc
 import dataclasses
 import random
-from typing import Sequence, ClassVar, Tuple, Protocol, Dict, runtime_checkable, Optional
+from typing import ClassVar, Tuple, Protocol, Dict, runtime_checkable, Optional
 
 DICE_NUMBERS = tuple(range(1, 7))
 Combination = Tuple[int, ...]
@@ -243,7 +243,8 @@ if __name__ == '__main__':
 
 
 class ScoreBoard:
-    categories: ClassVar[Sequence[Category]] = Aces, Deuces, Threes, Fours, Fives, Sixs
+    UPPER_SECTION_CATEGORIES: ClassVar[Tuple[Category, ...]] = Aces, Deuces, Threes, Fours, Fives, Sixs
+    LOWER_SECTION_CATEGORIES: ClassVar[Tuple[Category, ...]] = Choice, FourOfAKind, FullHouse, SmallStraight, LargeStraight, Yacht
 
     def __init__(self):
         self.rows: Dict[Category, ScoreBoardRow] = dict()
@@ -254,10 +255,18 @@ class ScoreBoard:
         self.rows[category] = ScoreBoardRow(combination=combination, category=category)
 
     @property
+    def upper_section_bonus(self):
+        if sum(self.rows[category].score for category in self.UPPER_SECTION_CATEGORIES if category in self.rows) >= 63:
+            return 35
+        else:
+            return 0
+
+    @property
     def score(self):
         total_score = 0
         for row_category, row in self.rows.items():
             total_score += row.score
+        total_score += self.upper_section_bonus
         return total_score
 
     @staticmethod
@@ -272,7 +281,11 @@ class ScoreBoard:
 
     @property
     def summary(self) -> str:
-        summaries = [self._summary_row(category=category, row=self.rows.get(category)) for category in self.categories]
+        summaries = []
+        summaries.extend([self._summary_row(category=category, row=self.rows.get(category)) for category in self.UPPER_SECTION_CATEGORIES])
+        summaries.append("Upper section bonus: " + (f"{self.upper_section_bonus}" if self.upper_section_bonus > 0 else ""))
+        summaries.extend([self._summary_row(category=category, row=self.rows.get(category)) for category in self.LOWER_SECTION_CATEGORIES])
+        summaries.append(f"Total: {self.score}")
         return "\n".join(summaries)
 
 
@@ -286,6 +299,7 @@ if __name__ == '__main__':
         print(f'Caught ValueError: {e}')
     board.add(combination=(4, 4, 4, 4, 4), category=Fours)
     print(board.summary)
+    assert 22 == board.score
 
     board = ScoreBoard()
     board.add(combination=(1, 4, 1, 2, 1), category=Deuces)
@@ -295,7 +309,11 @@ if __name__ == '__main__':
     except ValueError as e:
         print(f'Caught ValueError: {e}')
     board.add(combination=(5, 5, 5, 5, 5), category=Fours)
+    board.add(combination=(6, 6, 6, 6, 6), category=Sixs)
+    board.add(combination=(5, 5, 5, 5, 5), category=Fives)
+    board.add(combination=(3, 3, 3, 3, 3), category=Threes)
     print(board.summary)
+    assert 110 == board.score
 
 
 class Game:
