@@ -48,11 +48,11 @@ class MatchSpecific(Category):
         return sum(each for each in combination if each == cls.specific)
 
 
-class Ones(MatchSpecific):
+class Aces(MatchSpecific):
     specific: ClassVar[int] = 1
 
 
-class Twos(MatchSpecific):
+class Deuces(MatchSpecific):
     specific: ClassVar[int] = 2
 
 
@@ -74,16 +74,16 @@ class Sixs(MatchSpecific):
 
 if __name__ == '__main__':
     my_combination = (1, 2, 3, 4, 5)
-    assert 1 == Ones.measure(my_combination)
-    assert 2 == Twos.measure(my_combination)
+    assert 1 == Aces.measure(my_combination)
+    assert 2 == Deuces.measure(my_combination)
 
     my_combination = (2, 3, 4, 5, 6)
-    assert 0 == Ones.measure(my_combination)
-    assert 2 == Twos.measure(my_combination)
+    assert 0 == Aces.measure(my_combination)
+    assert 2 == Deuces.measure(my_combination)
 
     my_combination = rand_combination()
-    assert sum(filter(lambda x: x == 1, my_combination)) == Ones.measure(my_combination)
-    assert sum(filter(lambda x: x == 2, my_combination)) == Twos.measure(my_combination)
+    assert sum(filter(lambda x: x == 1, my_combination)) == Aces.measure(my_combination)
+    assert sum(filter(lambda x: x == 2, my_combination)) == Deuces.measure(my_combination)
 
 
 class SumAll(Category):
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     for _i in range(int(1e+10)):
         my_combination = rand_combination()
         if Yacht.measure(my_combination) == 50:
-            print(f"Yacht! out of {_i} times. {my_combination}")
+            print(f"{Yacht.__name__}! out of {_i} times. {my_combination}")
             break
         else:
             assert len(set(my_combination)) >= 2
@@ -232,10 +232,10 @@ class ScoreBoardRow:
 
 if __name__ == '__main__':
     my_combination = (1, 1, 2, 5, 5)
-    my_row = ScoreBoardRow(combination=my_combination, category=Ones)
+    my_row = ScoreBoardRow(combination=my_combination, category=Aces)
     assert 2 == my_row.score
 
-    my_row = ScoreBoardRow(combination=my_combination, category=Twos)
+    my_row = ScoreBoardRow(combination=my_combination, category=Deuces)
     assert 2 == my_row.score
 
     my_row = ScoreBoardRow(combination=my_combination, category=Threes)
@@ -243,7 +243,7 @@ if __name__ == '__main__':
 
 
 class ScoreBoard:
-    categories: ClassVar[Sequence[Category]] = Ones, Twos, Threes, Fours, Fives, Sixs
+    categories: ClassVar[Sequence[Category]] = Aces, Deuces, Threes, Fours, Fives, Sixs
 
     def __init__(self):
         self.rows: Dict[Category, ScoreBoardRow] = dict()
@@ -279,19 +279,19 @@ class ScoreBoard:
 if __name__ == '__main__':
     board = ScoreBoard()
     my_combination = (1, 1, 3, 5, 4)
-    board.add(combination=my_combination, category=Ones)
+    board.add(combination=my_combination, category=Aces)
     try:
-        board.add(combination=(5, 5, 5, 5, 5), category=Ones)
+        board.add(combination=(5, 5, 5, 5, 5), category=Aces)
     except ValueError as e:
         print(f'Caught ValueError: {e}')
     board.add(combination=(4, 4, 4, 4, 4), category=Fours)
     print(board.summary)
 
     board = ScoreBoard()
-    board.add(combination=(1, 4, 1, 2, 1), category=Twos)
-    board.add(combination=(1, 4, 1, 2, 1), category=Ones)
+    board.add(combination=(1, 4, 1, 2, 1), category=Deuces)
+    board.add(combination=(1, 4, 1, 2, 1), category=Aces)
     try:
-        board.add(combination=(1, 4, 1, 2, 5), category=Twos)
+        board.add(combination=(1, 4, 1, 2, 5), category=Deuces)
     except ValueError as e:
         print(f'Caught ValueError: {e}')
     board.add(combination=(5, 5, 5, 5, 5), category=Fours)
